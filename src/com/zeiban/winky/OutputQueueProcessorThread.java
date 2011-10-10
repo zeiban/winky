@@ -15,22 +15,20 @@ import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 public class OutputQueueProcessorThread extends Thread {
-	private Logger logger = Logger.getLogger(Main.LOG_FILENAME);
+	private Logger logger = Logger.getLogger(OutputQueueProcessorThread.class.getName());
 	private BlockingQueue<String> queue;
 	InputStreamThread stdin;
+	/*
 	private boolean commiting = false;
 	private boolean started = false;
 	private boolean restarting = false;
 	private boolean resetOnShutdown = false;
 	private int resetId;
-	public boolean isRestarting() {
-		return restarting;
-	}
-	public void setRestarting(boolean restarting) {
-		this.restarting = restarting;
-	}
+	*/
 	private Properties serverProperties = new Properties();
-	public OutputQueueProcessorThread(BlockingQueue<String> queue, InputStreamThread stdin) {
+	private ServerProcess server;
+	public OutputQueueProcessorThread(ServerProcess server, BlockingQueue<String> queue, InputStreamThread stdin) {
+		this.server = server;
 		this.queue = queue;
 		this.stdin = stdin;
 		this.setName("Queue Processor");
@@ -43,14 +41,14 @@ public class OutputQueueProcessorThread extends Thread {
 			while(true) {
 					String line = queue.take();
 					System.out.println(line);
-					if(started) {
+					if(server.isStarted()) {
 						if(line.contains("issued server command:")) {
 							String[] parts = line.split(" ");
 							String playerName = parts[3];
 							String command = parts[7];
 							if(command.equalsIgnoreCase("git-commit")) {
 								logger.info(playerName + " git-commit");
-								commiting = true;
+								server.setCommiting(true);
 								commitPlayer = playerName;
 								stdin.put("save-off");
 								stdin.put("save-all");
@@ -61,33 +59,38 @@ public class OutputQueueProcessorThread extends Thread {
 								}else {
 									try {
 										int id = Integer.parseInt(parts[8]);
-										processResetCommand(playerName, id);
-										break;
+										/*
+										if(processResetCommand(playerName, id)) {
+											break;
+										}*/
 									} catch (NumberFormatException e) {
 										stdin.put("tell " + playerName + " invalid commit ID");
 									}
 								}
 							} else if(command.equalsIgnoreCase("git-log")) {
-								processLogCommand(playerName);
+								//processLogCommand(playerName);
 							} else {
 								logger.info(playerName + " unknown command"); 
 							}
-						}
-						if(line.contains("Save complete")) {
-							if(commiting) {
-								processCommit(commitPlayer);
+						} else if(line.contains("Save complete")) {
+							if(server.isCommiting()) {
+								server.say("Commiting world " + server.getCommitWorld() + " to repository");
+								GitHelper.commit(server.getCommitWorld(), server.getCommitPlayer());
+								server.say("Commit complete");
+								server.sendText("save-on");
+							}
+						} else if(line.contains("Enabling level saving..")) {
+							if(server.isCommiting()) {
+								server.setCommiting(false);
 							}
 						}
-					}
-					if(line.contains("Enabling level saving..")) {
-						if(commiting) {
-							commiting = false;
-						}
+					} else if (line.contains("[INFO] Done")){
+						server.setStarted(true);
 					}
 					if(line.contains("[INFO] Done")) {
 						try {
 							serverProperties.load(new FileInputStream("server.properties"));
-							started = true;
+							server.setStarted(true);
 						} catch (Exception e) {
 							logger.severe("Unable to read server.properties"); 
 						}
@@ -95,28 +98,8 @@ public class OutputQueueProcessorThread extends Thread {
 			}
 		} catch (InterruptedException e) {
 		}
-		if(this.resetOnShutdown) {
-			//logger.info("Resetting to commit ID " + this.resetId);
-			Git git = initGit();
-			Iterable<RevCommit> commits;
-			try {
-				commits = git.log().call();
-				Iterator<RevCommit> iter = commits.iterator();
-				int i=0;
-				while(iter.hasNext()) {
-					RevCommit commit = iter.next();
-					if(i == this.resetId) {
-						git.reset().setMode(ResetType.HARD).setRef(commit.getName()).call();
-						//logger.info("Reset complete");
-						break;
-					}
-					i++;
-				}
-			} catch (Exception e1) {
-				logger.severe("Unable to commit world to repository");
-			}
-		}
 	}
+	/*
 	private void processCommit(String commitPlayer) {
 		try {
 			Git git = initGit();
@@ -131,9 +114,10 @@ public class OutputQueueProcessorThread extends Thread {
 			e.printStackTrace();
 		}
 		stdin.put("save-on");
-	}
-	private void processResetCommand(String playerName, int id) {
-		this.setRestarting(true);
+	}*/
+	/*
+	private boolean processResetCommand(String playerName, int id) {
+		server.setRestarting(true);
 		Git git = initGit();
 
 		Iterable<RevCommit> commits;
@@ -142,17 +126,23 @@ public class OutputQueueProcessorThread extends Thread {
 			Iterator<RevCommit> iter = commits.iterator();
 			int i=0;
 			while(iter.hasNext()) {
+				iter.next();
 				if(i == id) {
 					this.resetId = id;
 					this.resetOnShutdown = true;
 					stdin.put("stop");
+					return true;
 				}
 				i++;
 			}
+			stdin.put("tell " + playerName + " commit ID " + id + " doesn't exist");
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
+		return false;
+	}*/
+	/*
 	private Git initGit() {
 		Git git;
 		File worldDir = new File(serverProperties.getProperty("level-name"));
@@ -162,7 +152,8 @@ public class OutputQueueProcessorThread extends Thread {
 			git = Git.init().setDirectory(worldDir).call();
 		}
 		return git;
-	}
+	}*/
+	/*
 	private void processLogCommand(String playerName) {
 
 		Git git = initGit();
@@ -179,6 +170,6 @@ public class OutputQueueProcessorThread extends Thread {
 			}
 		} catch (Exception e) {
 		}
-	}
+	}*/
 
 }

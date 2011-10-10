@@ -8,11 +8,13 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 public class OutputStreamThread extends Thread {
-	private Logger logger = Logger.getLogger(Main.LOG_FILENAME);
+	private Logger logger = Logger.getLogger(OutputStreamThread.class.getName());
 	private boolean running = true;
 	private Scanner scanner;
 	private Queue<String> queue;
-	public OutputStreamThread(String name, InputStream is, Queue<String> queue) {
+	private ServerProcess server;
+	public OutputStreamThread(ServerProcess server, String name, InputStream is, Queue<String> queue) {
+		this.server = server;
 		this.setName(name);
 		scanner = new Scanner(is);
 		this.queue = queue;
@@ -21,14 +23,13 @@ public class OutputStreamThread extends Thread {
 	@Override
 	public void run() {
 		String line;
-		try{
-			while(true) {
-					line = scanner.nextLine();
-					this.queue.add(line);
+			while(!isInterrupted()) {
+					try {
+						line = scanner.nextLine();
+						this.queue.add(line);
+					} catch (NoSuchElementException e) {
+					}
 			}
-		} catch(Exception e) {
-			logger.info("Stopping " + this.getName() + "thread");
-		}
 		scanner.close();		
 	}
 }

@@ -1,18 +1,10 @@
 package com.zeiban.winky;
 
 
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 
-public class Main implements Runnable {
+public class Main {
+	/*
 	public static final String LOG_FILENAME = "winky.log";
 	public static final String PROPERTIES_FILENAME = "winky.properties";
 	
@@ -27,6 +19,7 @@ public class Main implements Runnable {
 	private Properties properties = new Properties();
 	private Properties serverProperties = new Properties();
 	private List<Thread> threads = new ArrayList<Thread>();
+	*/
 	/*
 	public class CommitThread extends Thread {
 		public boolean running = true;
@@ -74,13 +67,14 @@ public class Main implements Runnable {
 	}
 	*/
 	public static void main(String[] args) {
-		new Thread(new Main()).start();
+		new Thread(new ServerProcess()).start();
 	}
-
+	/*
 	public void run() {
 		try {
 			FileHandler handler = new FileHandler(Main.LOG_FILENAME);
 			handler.setFormatter(new SimpleFormatter());
+			Logger.getLogger("").setUseParentHandlers(false);
 			Logger.getLogger("").addHandler(handler);
 		} catch (Exception e) {
 		}
@@ -125,5 +119,5 @@ public class Main implements Runnable {
 			e.printStackTrace();
 		}
 	}
-
+	*/
 }

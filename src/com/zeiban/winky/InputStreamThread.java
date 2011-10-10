@@ -8,10 +8,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 public class InputStreamThread extends Thread {
-	private Logger logger = Logger.getLogger(Main.LOG_FILENAME);
+	private Logger logger = Logger.getLogger(InputStreamThread.class.getName());
 	private OutputStream os;
 	private BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
-	public InputStreamThread(String name, OutputStream os) {
+	private ServerProcess server;
+	public InputStreamThread(ServerProcess server, String name, OutputStream os) {
+		this.server = server;
 		this.setName(name);
 		this.os = os;
 		this.start();
@@ -37,7 +39,6 @@ public class InputStreamThread extends Thread {
 				}
 			}
 		} catch (InterruptedException e) {
-			logger.info("Stopping " + this.getName() + "thread");
 		}
 	}
 
