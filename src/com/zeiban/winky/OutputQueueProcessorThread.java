@@ -26,8 +26,8 @@ public class OutputQueueProcessorThread extends Thread {
 	private int resetId;
 	*/
 	private Properties serverProperties = new Properties();
-	private ServerProcess server;
-	public OutputQueueProcessorThread(ServerProcess server, BlockingQueue<String> queue, InputStreamThread stdin) {
+	private Wrapper server;
+	public OutputQueueProcessorThread(Wrapper server, BlockingQueue<String> queue, InputStreamThread stdin) {
 		this.server = server;
 		this.queue = queue;
 		this.stdin = stdin;
@@ -74,9 +74,9 @@ public class OutputQueueProcessorThread extends Thread {
 							}
 						} else if(line.contains("Save complete")) {
 							if(server.isCommiting()) {
-								server.say("Commiting world " + server.getCommitWorld() + " to repository");
+								server.message(server.getCommitPlayer(), "Commiting world " + server.getCommitWorld() + " to repository");
 								GitHelper.commit(server.getCommitWorld(), server.getCommitPlayer());
-								server.say("Commit complete");
+								server.message(server.getCommitPlayer(),"Commit complete");
 								server.sendText("save-on");
 							}
 						} else if(line.contains("Enabling level saving..")) {

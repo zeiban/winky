@@ -67,7 +67,7 @@ public class Main {
 	}
 	*/
 	public static void main(String[] args) {
-		new Thread(new ServerProcess()).start();
+		new Thread(new Wrapper()).start();
 	}
 	/*
 	public void run() {

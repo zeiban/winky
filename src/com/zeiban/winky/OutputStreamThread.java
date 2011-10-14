@@ -12,8 +12,8 @@ public class OutputStreamThread extends Thread {
 	private boolean running = true;
 	private Scanner scanner;
 	private Queue<String> queue;
-	private ServerProcess server;
-	public OutputStreamThread(ServerProcess server, String name, InputStream is, Queue<String> queue) {
+	private Wrapper server;
+	public OutputStreamThread(Wrapper server, String name, InputStream is, Queue<String> queue) {
 		this.server = server;
 		this.setName(name);
 		scanner = new Scanner(is);

@@ -45,7 +45,7 @@ public class GitHelper {
 		return false;
 	}
 	
-	public static List<String> log(String world, String commiter) {
+	public static List<String> log(String world, String playerName) {
 		List<String> commitLogs = new ArrayList<String>();
 		Git git = init(world);
 
@@ -63,7 +63,7 @@ public class GitHelper {
 		}
 		return commitLogs;
 	}
-	public static boolean reset(String world, int id) {
+	public static boolean reset(String world, int id, boolean validateOnly) {
 		Git git = init(world);
 		Iterable<RevCommit> commits;
 		try {
@@ -73,8 +73,10 @@ public class GitHelper {
 			while(iter.hasNext()) {
 				RevCommit commit = iter.next();
 				if(i == id) {
-					git.reset().setMode(ResetType.HARD).setRef(commit.getName()).call();
-					logger.log(Level.INFO, "Reset of world " + world + " is complete");
+					if(!validateOnly){
+						git.reset().setMode(ResetType.HARD).setRef(commit.getName()).call();
+						logger.log(Level.INFO, "Reset of world " + world + " is complete");
+					}
 					return true;
 				}
 				i++;

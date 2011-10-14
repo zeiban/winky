@@ -11,8 +11,8 @@ public class InputStreamThread extends Thread {
 	private Logger logger = Logger.getLogger(InputStreamThread.class.getName());
 	private OutputStream os;
 	private BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
-	private ServerProcess server;
-	public InputStreamThread(ServerProcess server, String name, OutputStream os) {
+	private Wrapper server;
+	public InputStreamThread(Wrapper server, String name, OutputStream os) {
 		this.server = server;
 		this.setName(name);
 		this.os = os;

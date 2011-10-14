@@ -2,9 +2,11 @@
 package com.zeiban.winky;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Scanner;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ConsoleInputThread extends Thread {
@@ -12,9 +14,9 @@ public class ConsoleInputThread extends Thread {
 	private InputStreamThread stdin;
 	private Scanner scanner;
 	private BufferedReader input;
-	private ServerProcess server;
+	private Wrapper server;
 	private boolean running = true;
-	public ConsoleInputThread(ServerProcess server, InputStreamThread stdin) {
+	public ConsoleInputThread(Wrapper server, InputStreamThread stdin) {
 		this.server = server;
 		this.stdin = stdin;
 		this.setName("Console Input Thread");
@@ -28,28 +30,15 @@ public class ConsoleInputThread extends Thread {
 			try {
 				if(input.ready()) {
 					String line = scanner.nextLine();
-					if(line.startsWith("git-commit")) {
-						if(server.isCommiting()) {
-							server.say("Commit is already in process");
-						} else {
-							String[] parts = line.split(" ");
-							if(parts.length >= 2) {
-								server.setCommiting(true);
-								server.setCommitPlayer("CONSOLE");
-								server.setCommitWorld(parts[1]);
-								server.sendText("save-off");
-								server.sendText("save-all");
-							} else {
-								
-							}
-						}
+					if(line.toLowerCase().startsWith("git-commit")) {
+						server.commitCommand(line, null);
 					} else if(line.equalsIgnoreCase("restart")){
 						server.setRestarting(true);
 						server.sendText("stop");
-					} else if(line.equalsIgnoreCase("git-log")){
-						
-					} else if(line.equalsIgnoreCase("git-reset")){
-						
+					} else if(line.toLowerCase().startsWith("git-log")){
+						server.logCommand(line, null);
+					} else if(line.toLowerCase().startsWith("git-reset")){
+						server.resetCommand(line, null);
 					} else {
 						stdin.put(line);
 					}
