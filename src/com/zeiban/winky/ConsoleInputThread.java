@@ -2,11 +2,9 @@
 package com.zeiban.winky;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Scanner;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ConsoleInputThread extends Thread {
@@ -32,9 +30,8 @@ public class ConsoleInputThread extends Thread {
 					String line = scanner.nextLine();
 					if(line.toLowerCase().startsWith("git-commit")) {
 						server.commitCommand(line, null);
-					} else if(line.equalsIgnoreCase("restart")){
-						server.setRestarting(true);
-						server.sendText("stop");
+					} else if(line.toLowerCase().startsWith("restart")){
+						server.restartCommand(null);
 					} else if(line.toLowerCase().startsWith("git-log")){
 						server.logCommand(line, null);
 					} else if(line.toLowerCase().startsWith("git-reset")){

@@ -69,6 +69,8 @@ public class OutputQueueProcessorThread extends Thread {
 								}
 							} else if(command.equalsIgnoreCase("git-log")) {
 								//processLogCommand(playerName);
+							} else if(command.equalsIgnoreCase("restart")) {
+								server.restartCommand(playerName);
 							} else {
 								logger.info(playerName + " unknown command"); 
 							}

@@ -2,10 +2,8 @@
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
@@ -16,10 +14,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand.ResetType;
-import org.eclipse.jgit.revwalk.RevCommit;
 
 public class Wrapper implements Runnable {
 	private Logger logger = Logger.getLogger(Wrapper.class.getName());
@@ -263,5 +257,10 @@ public class Wrapper implements Runnable {
 		} else {
 			this.sendText("tell " + playerName + " " + text);
 		}
+	}
+	public void restartCommand(String playerName) {
+		this.message(playerName, "Restarting server");
+		this.setRestarting(true);
+		this.sendText("stop");
 	}
 }
