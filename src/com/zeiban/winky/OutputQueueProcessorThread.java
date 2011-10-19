@@ -36,7 +36,6 @@ public class OutputQueueProcessorThread extends Thread {
 	}
 	@Override
 	public void run() {
-		String commitPlayer = null;
 		try {
 			while(true) {
 					String line = queue.take();
@@ -45,31 +44,14 @@ public class OutputQueueProcessorThread extends Thread {
 						if(line.contains("issued server command:")) {
 							String[] parts = line.split(" ");
 							String playerName = parts[3];
-							String command = parts[7];
-							if(command.equalsIgnoreCase("git-commit")) {
-								logger.info(playerName + " git-commit");
-								server.setCommiting(true);
-								commitPlayer = playerName;
-								stdin.put("save-off");
-								stdin.put("save-all");
-							} else if(command.equalsIgnoreCase("git-reset")) {
-								if(parts.length < 8) {
-									stdin.put("tell " + playerName + " git-reset requires an ID");
-									stdin.put("tell " + playerName + " git-reset <ID>");
-								}else {
-									try {
-										int id = Integer.parseInt(parts[8]);
-										/*
-										if(processResetCommand(playerName, id)) {
-											break;
-										}*/
-									} catch (NumberFormatException e) {
-										stdin.put("tell " + playerName + " invalid commit ID");
-									}
-								}
-							} else if(command.equalsIgnoreCase("git-log")) {
-								//processLogCommand(playerName);
-							} else if(command.equalsIgnoreCase("restart")) {
+							String command = line.substring(line.indexOf(":")).toLowerCase();
+							if(command.startsWith("git-commit")) {
+								server.commitCommand(command, playerName);
+							} else if(command.startsWith("git-reset")) {
+								server.resetCommand(command, playerName);
+							} else if(command.startsWith("git-log")) {
+								server.logCommand(command, playerName);
+							} else if(command.startsWith("restart")) {
 								server.restartCommand(playerName);
 							} else {
 								logger.info(playerName + " unknown command"); 
@@ -87,9 +69,6 @@ public class OutputQueueProcessorThread extends Thread {
 							}
 						}
 					} else if (line.contains("[INFO] Done")){
-						server.setStarted(true);
-					}
-					if(line.contains("[INFO] Done")) {
 						try {
 							serverProperties.load(new FileInputStream("server.properties"));
 							server.setStarted(true);
