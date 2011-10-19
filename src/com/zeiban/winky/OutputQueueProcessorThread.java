@@ -1,36 +1,20 @@
 package com.zeiban.winky;
 
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.text.SimpleDateFormat;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand.ResetType;
-import org.eclipse.jgit.api.Status;
-import org.eclipse.jgit.revwalk.RevCommit;
-
 public class OutputQueueProcessorThread extends Thread {
 	private Logger logger = Logger.getLogger(OutputQueueProcessorThread.class.getName());
 	private BlockingQueue<String> queue;
-	InputStreamThread stdin;
-	/*
-	private boolean commiting = false;
-	private boolean started = false;
-	private boolean restarting = false;
-	private boolean resetOnShutdown = false;
-	private int resetId;
-	*/
+
 	private Properties serverProperties = new Properties();
 	private Wrapper server;
 	public OutputQueueProcessorThread(Wrapper server, BlockingQueue<String> queue, InputStreamThread stdin) {
 		this.server = server;
 		this.queue = queue;
-		this.stdin = stdin;
 		this.setName("Queue Processor");
 		this.start();
 	}
@@ -44,7 +28,7 @@ public class OutputQueueProcessorThread extends Thread {
 						if(line.contains("issued server command:")) {
 							String[] parts = line.split(" ");
 							String playerName = parts[3];
-							String command = line.substring(line.indexOf(":")).toLowerCase();
+							String command = line.substring(line.indexOf(": ")+2).toLowerCase();
 							if(command.startsWith("git-commit")) {
 								server.commitCommand(command, playerName);
 							} else if(command.startsWith("git-reset")) {
@@ -58,10 +42,13 @@ public class OutputQueueProcessorThread extends Thread {
 							}
 						} else if(line.contains("Save complete")) {
 							if(server.isCommiting()) {
-								server.message(server.getCommitPlayer(), "Commiting world " + server.getCommitWorld() + " to repository");
-								GitHelper.commit(server.getCommitWorld(), server.getCommitPlayer());
-								server.message(server.getCommitPlayer(),"Commit complete");
-								server.sendText("save-on");
+								server.message(server.getCommitPlayer(), "Commiting world \"" + server.getCommitWorld() + "\" to repository");
+								if(!GitHelper.commit(server.getCommitWorld(), server.getCommitPlayer())) {
+									server.message(server.getCommitPlayer(),"Commit failed, check log");
+								} else {
+									server.message(server.getCommitPlayer(),"Commit complete");
+									server.sendText("save-on");
+								}
 							}
 						} else if(line.contains("Enabling level saving..")) {
 							if(server.isCommiting()) {

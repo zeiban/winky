@@ -217,39 +217,36 @@ public class Wrapper implements Runnable {
 			String[] parts = line.split(" ");
 			if(parts.length >= 2) {
 				this.setCommiting(true);
-				this.setCommitPlayer(playerName);
+				this.setCommitPlayer(playerName == null ? "console" : playerName);
 				this.setCommitWorld(parts[1]);
 				this.sendText("save-off");
 				this.sendText("save-all");
 			} else {
+				this.message(playerName, "Invalid git-commit parameters.");
 				this.message(playerName, "Usage: /git-commit <world>");
 			}
 		}
 	}
 	public void logCommand(String line, String playerName) {
-		String error = "";
-		String usage = " Usage: /git-log <world>";
 		String[] parts = line.split(" ");
 		if(parts.length >= 2) {
 			String world = parts[1];
 			if(new File(world).exists()) {
 				List<String> commits = GitHelper.log(world, playerName);
-				for(String commit : commits) {
-					if(playerName == null) {
-						System.out.println(commit);
-					} else {
-						this.sendText("tell " + playerName + " " + commit);
+				if(commits.size() > 0) {
+					for(String commit : commits) {
+						this.message(playerName, commit);
 					}
+				} else {
+					this.message(playerName, "No commits for world \"" + world + "\"");
 				}
 			} else {
-				error = "Invalid world " + world;
+				this.message(playerName, "Invalid world \"" + world + "\"");
 			}
 		} else {
-			error = "Invalid git-log parameters.";
+			this.message(playerName, "Invalid git-log parameters.");
+			this.message(playerName, "Usage: git-log <world>");
 		}
-		String msg = error + usage;
-		this.message(playerName, msg);
-
 	}
 	public void message(String playerName, String text) {
 		if( playerName == null) {
