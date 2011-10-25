@@ -2,6 +2,7 @@
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,9 @@ import java.util.logging.SimpleFormatter;
 
 public class Wrapper implements Runnable {
 	private Logger logger = Logger.getLogger(Wrapper.class.getName());
+	private String[] args;
+	private Thread wrapperThread;
+	
 	private static final String PROP_FILENAME = "winky.properties";
 	private static final String LOG_FILENAME = "winky.log";
 	private static final String PROP_JVM_PATH = "jvm.path";
@@ -36,6 +40,9 @@ public class Wrapper implements Runnable {
 	private boolean restarting = false;
 	private boolean started = false;
 
+	public Wrapper(String[] args) {
+		this.args = args;
+	}
 	public String getCommitWorld() {
 		return commitWorld;
 	}
@@ -108,6 +115,11 @@ public class Wrapper implements Runnable {
 		while(true) {
 			logger.log(Level.INFO, "Loading properties");
 			try {
+				File propertiesFile = new File(Wrapper.PROP_FILENAME);
+				if(!propertiesFile.exists()) {
+					properties.setProperty(Wrapper.PROP_JVM_PATH, "java");
+					properties.store(new FileOutputStream(propertiesFile), "");
+				} 
 				properties.load(new FileInputStream(Wrapper.PROP_FILENAME));
 			} catch (Exception e) {
 				logger.log(Level.SEVERE, "Unable to load properties file", e);
@@ -259,5 +271,25 @@ public class Wrapper implements Runnable {
 		this.message(playerName, "Restarting server");
 		this.setRestarting(true);
 		this.sendText("stop");
+	}
+	public void start() {
+		wrapperThread = new Thread(this);
+		wrapperThread.start();
+	}
+	public void stop() {
+		this.sendText("stop");
+		new Thread(new Runnable(){
+
+			@Override
+			public void run() {
+				try {
+					
+					logger.log(Level.INFO,"Waiting for wrapper thread to stop");
+					wrapperThread.join();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}}).start();
+		
 	}
 }
