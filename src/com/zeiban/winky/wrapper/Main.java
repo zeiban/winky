@@ -9,11 +9,12 @@ import org.tanukisoftware.wrapper.WrapperManager;
 import com.zeiban.winky.Wrapper;
 
 public class Main implements WrapperListener {
-	private Logger logger = Logger.getLogger(Main.class.getName());
+	private static Logger logger = Logger.getLogger(Main.class.getName());
 	private Wrapper wrapper;
 	private Main(){}
 	
 	public static void main(String[] args) {
+		logger.log(Level.INFO,"Runing Winky as a Java Service Wrapper");
 		WrapperManager.start(new Main(), args);
 	}
 
@@ -32,15 +33,15 @@ public class Main implements WrapperListener {
 
 	@Override
 	public Integer start(String[] args) {
-		logger.log(Level.INFO,"Starting Wrapper Service");
 		wrapper = new Wrapper(args);
 		wrapper.start();
+		logger.log(Level.INFO,"Starting service");
 		return null;
 	}
 
 	@Override
 	public int stop(int exitCode) {
-		logger.log(Level.INFO,"Starting Wrapper Service");
+		logger.log(Level.INFO,"Stopping service");
 		wrapper.stop();
 		return 0;
 	}
