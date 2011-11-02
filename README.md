@@ -9,8 +9,12 @@ Why save the entire world when you can just save the changes.
 
 Commands
 
-/git-commit - Commits the current world to the repository
+If no <world> is specified with the commands then the level-name in the server.properties is used.
 
-/git-log - List all commits for the current world
+git-commit <world> - Commits a world to the repository.
 
-/git-reset <id> - Will shutdown the server, reset to a previous commit, and then start the server.  
+git-log <world> - List all commits for the given world. 
+
+git-reset <world> <id> - Will shutdown the server, reset to a previous commit, and then start the server.
+
+  
