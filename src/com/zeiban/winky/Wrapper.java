@@ -23,7 +23,7 @@ public class Wrapper implements Runnable {
 	
 	private static final String PROP_FILENAME = "winky.properties";
 	private static final String LOG_FILENAME = "winky.log";
-	private static final String PROP_JVM_PATH = "jvm.path";
+	private static final String JAVA_COMMAND = "winky.java.command";
 	private static final String APP_NAME = "Winky";
 	private Process process;
 	private OutputStreamThread stdout;
@@ -117,7 +117,7 @@ public class Wrapper implements Runnable {
 			try {
 				File propertiesFile = new File(Wrapper.PROP_FILENAME);
 				if(!propertiesFile.exists()) {
-					properties.setProperty(Wrapper.PROP_JVM_PATH, "java");
+					properties.setProperty(Wrapper.JAVA_COMMAND, "java");
 					properties.store(new FileOutputStream(propertiesFile), "");
 				} 
 				properties.load(new FileInputStream(Wrapper.PROP_FILENAME));
@@ -128,7 +128,7 @@ public class Wrapper implements Runnable {
 			
 			logger.log(Level.INFO, "Starting Minecraft server process");
 			try {
-				process = Runtime.getRuntime().exec(properties.getProperty(Wrapper.PROP_JVM_PATH,"java") + " -Xmx1024M -Xms1024M -jar minecraft_server.jar nogui");
+				process = Runtime.getRuntime().exec(properties.getProperty(Wrapper.JAVA_COMMAND,"java") + " -Xmx1024M -Xms1024M -jar minecraft_server.jar nogui");
 			} catch (IOException e) {
 				logger.log(Level.SEVERE, "Unable to start process", e);
 				return;
