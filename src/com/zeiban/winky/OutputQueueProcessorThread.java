@@ -1,8 +1,6 @@
 package com.zeiban.winky;
 
 
-import java.io.FileInputStream;
-import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
 
@@ -10,7 +8,6 @@ public class OutputQueueProcessorThread extends Thread {
 	private Logger logger = Logger.getLogger(OutputQueueProcessorThread.class.getName());
 	private BlockingQueue<String> queue;
 
-	private Properties serverProperties = new Properties();
 	private Wrapper server;
 	public OutputQueueProcessorThread(Wrapper server, BlockingQueue<String> queue, InputStreamThread stdin) {
 		this.server = server;
@@ -43,7 +40,7 @@ public class OutputQueueProcessorThread extends Thread {
 						} else if(line.contains("Save complete")) {
 							if(server.isCommiting()) {
 								server.message(server.getCommitPlayer(), "Commiting world \"" + server.getCommitWorld() + "\" to repository");
-								if(!GitHelper.commit(server.getCommitWorld(), server.getCommitPlayer())) {
+								if(!GitHelper.commit(server.getCommitWorld(), server.getCommitPlayer() + " " + server.getCommitComment())) {
 									server.message(server.getCommitPlayer(),"Commit failed, check log");
 								} else {
 									server.message(server.getCommitPlayer(),"Commit complete");
@@ -57,7 +54,6 @@ public class OutputQueueProcessorThread extends Thread {
 						}
 					} else if (line.contains("[INFO] Done")){
 						try {
-							serverProperties.load(new FileInputStream("server.properties"));
 							server.setStarted(true);
 						} catch (Exception e) {
 							logger.severe("Unable to read server.properties"); 

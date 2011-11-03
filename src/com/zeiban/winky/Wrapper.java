@@ -2,9 +2,12 @@
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
@@ -34,11 +37,20 @@ public class Wrapper implements Runnable {
 	private boolean commiting = false;
 	private String commitPlayer;
 	private String commitWorld;
+	private String commitComment;
+	public String getCommitComment() {
+		return commitComment;
+	}
+	public void setCommitComment(String commitComment) {
+		this.commitComment = commitComment;
+	}
+
 	private boolean resetting = false;
 	private String resetWorld;
 	private int resetId;
 	private boolean restarting = false;
 	private boolean started = false;
+	private Properties serverProperties = new Properties();
 
 	public Wrapper(String[] args) {
 		this.args = args;
@@ -60,6 +72,12 @@ public class Wrapper implements Runnable {
 		return started;
 	}
 	public void setStarted(boolean started) {
+		try {
+			serverProperties.load(new FileInputStream("server.properties"));
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Unable to open server.properties file ", e);
+		}
+
 		this.started = started;
 	}
 
@@ -224,25 +242,44 @@ public class Wrapper implements Runnable {
 	}
 	public void commitCommand(String line, String playerName) {
 		if(this.isCommiting()) {
-			this.message(playerName, "Commit is already in process>");
+			this.message(playerName, "Commit is already in process");
 		} else {
 			String[] parts = line.split(" ");
-			if(parts.length >= 2) {
+			String world;
+			String comment = null;
+			if(parts.length > 2) {
+				world = parts[1];
+				comment = parts[2];
+			} else {
+				if(parts.length > 1) {
+					world = parts[1];
+				} else {
+					world = this.serverProperties.getProperty("level-name");
+				}
+				comment = "";
+			}
+
+			if(new File(world).exists()) {
 				this.setCommiting(true);
 				this.setCommitPlayer(playerName == null ? "console" : playerName);
-				this.setCommitWorld(parts[1]);
+				this.setCommitComment(comment);
+				this.setCommitWorld(world);
 				this.sendText("save-off");
 				this.sendText("save-all");
 			} else {
-				this.message(playerName, "Invalid git-commit parameters.");
-				this.message(playerName, "Usage: /git-commit <world>");
+				this.message(playerName, "The world \"" + world + "\" doesn't exist");
 			}
 		}
 	}
 	public void logCommand(String line, String playerName) {
 		String[] parts = line.split(" ");
-		if(parts.length >= 2) {
-			String world = parts[1];
+		String world;
+		if(parts.length > 1) {
+			world = parts[1];
+		} else {
+			world = this.serverProperties.getProperty("level-name");
+		}
+		if(world != null) {
 			if(new File(world).exists()) {
 				List<String> commits = GitHelper.log(world, playerName);
 				if(commits.size() > 0) {

@@ -29,14 +29,14 @@ public class GitHelper {
 		}
 		return git;
 	}
-	public synchronized static boolean commit(String world, String commiter) {
+	public synchronized static boolean commit(String world, String message) {
 		try {
 			Git git = init(world);
 			
 			git.add().addFilepattern(".").call();
 			Status status = git.status().call();
 			if(status.getAdded().size() > 0 || status.getChanged().size() > 0) {
-				git.commit().setMessage(commiter).call();
+				git.commit().setMessage(message).call();
 				return true;
 			}
 		} catch (Exception e) {
