@@ -1,3 +1,5 @@
+!(/path/to/img.jpg)
+
 WINKY
 ========
 
